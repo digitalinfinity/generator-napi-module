@@ -1,0 +1,9 @@
+{
+  "generator-node": {
+    "promptValues": {
+      "authorName": "Hitesh Kanwathirtha",
+      "authorEmail": "digitalinfinity@gmail.com",
+      "authorUrl": "https://github.com/digitalinfinity"
+    }
+  }
+}
