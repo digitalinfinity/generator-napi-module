@@ -1,0 +1,4 @@
+node_modules
+coverage
+.vscode/
+generators/app/index.js

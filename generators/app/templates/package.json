@@ -1,0 +1,18 @@
+{
+    "main": "lib/binding.js",
+    "dependencies": {
+        "node-addon-api": "^0.3.0"
+    },
+    "devDependencies": {
+        "@types/node": "^7.0.22",
+        "jest": "^19.0.2",
+        "jest-cli": "^19.0.1"
+    },
+    "jest": {
+        "testEnvironment": "node"
+    },
+    "scripts": {
+        "test": "node --napi-modules ./node_modules/jest/bin/jest.js"
+    },
+    "gypfile": true
+}
