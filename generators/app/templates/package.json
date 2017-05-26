@@ -1,0 +1,7 @@
+{
+    "main": "lib/binding.js",
+    "dependencies": {
+        "node-addon-api": "^0.3.0"
+    },
+    "gypfile": true
+}

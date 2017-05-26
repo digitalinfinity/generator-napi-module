@@ -1,0 +1,55 @@
+{
+  "name": "generator-napi-module",
+  "version": "0.1.0",
+  "description": "A yeoman generator to create a next-generation Node native module using N-API",
+  "homepage": "",
+  "author": {
+    "name": "Hitesh Kanwathirtha",
+    "email": "digitalinfinity@gmail.com",
+    "url": "https://github.com/digitalinfinity"
+  },
+  "files": [
+    "generators"
+  ],
+  "main": "generators/index.js",
+  "keywords": [
+    "yeoman-generator",
+    "napi",
+    "node",
+    "native module",
+    "addon"
+  ],
+  "devDependencies": {
+    "yeoman-test": "^1.6.0",
+    "yeoman-assert": "^3.0.0",
+    "nsp": "^2.6.3",
+    "eslint": "^3.18.0",
+    "eslint-config-xo-space": "^0.16.0",
+    "jest": "^19.0.2",
+    "jest-cli": "^19.0.1"
+  },
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "init-package-json": "^1.10.1",
+    "uppercamelcase": "^3.0.0",
+    "yeoman-generator": "^1.0.0",
+    "yosay": "^2.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "scripts": {
+    "prepublish": "nsp check",
+    "pretest": "eslint . --fix",
+    "test": "jest"
+  },
+  "eslintConfig": {
+    "extends": "xo-space",
+    "env": {
+      "jest": true,
+      "node": true
+    }
+  },
+  "repository": "digitalinfinity/generator-napi-module",
+  "license": "MIT"
+}
