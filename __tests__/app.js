@@ -11,6 +11,7 @@ function defaultPackageConfigFunc() {
     resolve({
       moduleFileName: `${moduleName}-native`,
       moduleSourceFileName: moduleName.replace(new RegExp('-', 'g'), '_') + '.cc',
+      moduleHeaderFileName: moduleName.replace(new RegExp('-', 'g'), '_') + '.h',
       moduleClassName: uppercamelcase(moduleName)
     });
   });
@@ -27,7 +28,8 @@ describe('generator-napi-module:app', () => {
       'binding.gyp',
       'lib/binding.js',
       'src/test_napi_module.cc',
-      '__tests__/binding.js'
+      'src/include/test_napi_module.h',
+      'test/test_binding.js'
     ]);
   });
 });

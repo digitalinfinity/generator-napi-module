@@ -1,20 +1,40 @@
-#include <napi.h>
+#include "<%= moduleHeaderFileName %>"
 
 using namespace Napi;
 
-Value GetGreetingCallback(const CallbackInfo& info) {
-    return String::New(info.Env(), "hello");
+void <%= moduleClassName %>::Initialize(Napi::Env& env, Object& target) {
+    Napi::Function constructor = DefineClass(env, "<%= moduleClassName %>", {
+        InstanceMethod("greet", &Greet)
+    });
+
+    target.Set("<%= moduleClassName %>", constructor);
 }
 
-Object Init<%= moduleClassName %>Object(Env env) {
-    Object exports = Object::New(env);
-    exports["getGreeting"] = Function::New(env, GetGreetingCallback, "getGreeting");
+Napi::Value <%= moduleClassName %>::Greet(const Napi::CallbackInfo& info) {
+    if (info.Length() < 1)
+    {
+        throw Error::New(info.Env(), "You need to introduce yourself to greet");
+    }
 
-    return exports;
+    String name = info[0].As<String>();
+
+    printf("Hello %s\n", name.Utf8Value().c_str());
+    printf("I am %s\n", this->_greeterName.Value().Utf8Value().c_str());
+
+    return this->_greeterName.Value();
+}
+
+<%= moduleClassName %>::<%= moduleClassName %>(const Napi::CallbackInfo& info) {
+    if (info.Length() < 1)
+    {
+        throw Error::New(info.Env(), "You must name me");
+    }
+
+    this->_greeterName = Persistent(info[0].As<String>());
 }
 
 void Init(Env env, Object exports, Object module) {
-    exports.Set("<%= moduleClassName %>", Init<%= moduleClassName %>Object(env));
+    <%= moduleClassName %>::Initialize(env, exports);
 }
 
 NODE_API_MODULE(addon, Init)

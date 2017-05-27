@@ -11,8 +11,21 @@ interface IGeneratorProps
 {
   moduleFileName: string,
   moduleSourceFileName: string,
+  moduleHeaderFileName: string,
   moduleClassName: string
 };
+
+function getCppFileName(strName: string) {
+  // If the name of the module provided happens 
+  // to be napi, normalize it so that the header
+  // doesn't clash with node-addon-api's napi.h
+  if (strName.toLowerCase() === "napi")
+  {
+    strName = "napi-module";
+  }
+
+  return strName.replace(new RegExp('-', 'g'), '_') 
+}
 
 function createPackageJson() {
     // Figure out the directory to put in .npm-init
@@ -41,7 +54,8 @@ function createPackageJson() {
       const props: IGeneratorProps =
         {
           moduleFileName: `${moduleName}-native`,
-          moduleSourceFileName: moduleName.replace(new RegExp('-', 'g'), '_') + '.cc',
+          moduleSourceFileName: getCppFileName(moduleName) + '.cc',
+          moduleHeaderFileName: getCppFileName(moduleName) + '.h',
           moduleClassName: uppercamelcase(moduleName)
         };
 
@@ -88,7 +102,8 @@ module.exports = class extends Generator {
         ['binding.gyp'],
         ['lib/binding.js'],
         ['src/module.cc', `src/${this.props.moduleSourceFileName}`],
-        ['__tests__/binding.js']
+        ['src/include/module.h', `src/include/${this.props.moduleHeaderFileName}`],
+        ['test/test_binding.js']
     ];
 
     for (const fileSpec of files) {
