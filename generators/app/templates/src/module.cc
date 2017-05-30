@@ -4,7 +4,7 @@ using namespace Napi;
 
 void <%= moduleClassName %>::Initialize(Napi::Env& env, Object& target) {
     Napi::Function constructor = DefineClass(env, "<%= moduleClassName %>", {
-        InstanceMethod("greet", &Greet)
+        InstanceMethod("greet", &<%= moduleClassName %>::Greet)
     });
 
     target.Set("<%= moduleClassName %>", constructor);
