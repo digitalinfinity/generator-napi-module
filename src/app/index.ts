@@ -1,10 +1,12 @@
 import * as Generator from 'yeoman-generator';
 import * as path from 'path';
+import * as fs from 'fs';
 
 // Stuff without types
 const chalk = require('chalk');
 const initPackageJson = require('init-package-json');
 const uppercamelcase = require('uppercamelcase');
+const writeFileAtomic = require('write-file-atomic');
 const yosay = require('yosay');
 
 interface IGeneratorProps
@@ -14,6 +16,12 @@ interface IGeneratorProps
   moduleSourceFileName: string,
   moduleHeaderFileName: string,
   moduleClassName: string
+};
+
+interface ICreatePackageJsonResult
+{
+  packageJsonData: any,
+  props: IGeneratorProps
 };
 
 function getValidModuleName(strName: string) {
@@ -49,7 +57,7 @@ function createPackageJson() {
   const initFile = path.resolve(npmDirRoot, '.npm-init');
   const dir = process.cwd();
 
-  return new Promise<IGeneratorProps>(function (resolve, reject) {
+  return new Promise<ICreatePackageJsonResult>(function (resolve, reject) {
     initPackageJson(dir, initFile, {}, function (error: any, data: any) {
       if (error) {
         reject(error);
@@ -66,13 +74,68 @@ function createPackageJson() {
           moduleClassName: uppercamelcase(getValidModuleName(moduleName))
         };
 
-      resolve(props);
+      resolve({
+        packageJsonData: data,
+        props: props
+      });
     });
   });
 }
 
+async function updatePackageJsonForTypeScript(generator: any, 
+  currentPackageJsonData: any,
+  packageJsonPath: string) {
+  if (generator.options.typescript == false)
+  {
+      await generator.prompt([{
+        type: 'confirm',
+        name: 'typescript',
+        message: 'Would you like to generate TypeScript wrappers for your module?',
+        default: false
+      }]).then((answers: any) => {
+            (generator.options as any).typescript = answers.typescript;
+      });
+  }
+
+  return new Promise(function(resolve, reject) {
+    if (!generator.options.typescript)
+    {
+      resolve();
+      return;
+    }
+
+    // We do want TypeScript support- update package.json
+    let tsPackageJson = undefined;
+    try {
+      tsPackageJson = JSON.parse(fs.readFileSync(generator.templatePath("package.ts.json"), 'utf8'));
+    }
+    catch (e) {
+      reject(e);
+    }
+
+    if (!tsPackageJson)
+    {
+      reject("Invalid TypeScript package");
+    }
+
+    Object.assign(currentPackageJsonData, tsPackageJson);
+    writeFileAtomic(packageJsonPath, 
+      JSON.stringify(currentPackageJsonData, null, 4), 
+      function(err: any) {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        generator.log("Updated package.json to support TypeScript");
+        resolve();
+        return;
+      });
+  });
+}
+
 module.exports = class extends Generator {
-  _packageConfigFunc: () => Promise<IGeneratorProps>;
+  _packageConfigFunc: () => Promise<ICreatePackageJsonResult>;
   props: IGeneratorProps;
 
   constructor(args: any, opts: any) {
@@ -96,26 +159,25 @@ module.exports = class extends Generator {
       'Welcome to the bedazzling ' + chalk.red('N-API module') + ' generator!'
     ));
 
-    const genTypeScript = (this.options as any).typescript;
-    let sourcePackageJson = 'package.json';
-
-    if (genTypeScript)
-    {
-      sourcePackageJson = 'package.ts.json';
-    }
-
+    const destPackageJson = this.destinationPath('package.json');
     // First, deploy package.json
     // We'll use this to start configuring the package's properties
     this.fs.copy(
-      this.templatePath(sourcePackageJson),
-      this.destinationPath('package.json')
+      this.templatePath("package.json"),
+      destPackageJson
     );
 
     const oThis = this;
     return new Promise((resolve, reject) => {
       oThis.fs.commit([], async function () {
         // Get the properties we need to fill in the templates
-        oThis.props = await oThis._packageConfigFunc();
+        const result = await oThis._packageConfigFunc();
+
+        oThis.props = result.props;
+
+        await updatePackageJsonForTypeScript(oThis, 
+                result.packageJsonData,
+                destPackageJson);
         resolve();
       });
     });

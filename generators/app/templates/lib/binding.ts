@@ -1,6 +1,6 @@
 const addon = require('../build/Release/<%= moduleFileName %>');
 
-interface I<%= moduleClassName %>
+interface I<%= moduleClassName %>Native
 {
     greet(strName: string): string;
 };
@@ -15,7 +15,7 @@ class <%= moduleClassName %> {
     }
 
     // private members
-    _addonInstance: I<%= moduleClassName %>;
+    private _addonInstance: I<%= moduleClassName %>Native;
 }
 
-module.exports = <%= moduleClassName %>;
+export = <%= moduleClassName %>;

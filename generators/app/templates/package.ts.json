@@ -1,8 +1,4 @@
 {
-    "main": "lib/binding.js",
-    "dependencies": {
-        "node-addon-api": "^0.3.0"
-    },
     "devDependencies": {
         "@types/node": "^7.0.22",
         "typescript": "^2.3.3"
@@ -10,6 +6,5 @@
     "scripts": {
         "pretest": "tsc",
         "test": "node --napi-modules ./test/test_binding.js"
-    },
-    "gypfile": true
+    }
 }
