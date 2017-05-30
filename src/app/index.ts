@@ -167,15 +167,14 @@ module.exports = class extends Generator {
       destPackageJson
     );
 
-    const oThis = this;
     return new Promise((resolve, reject) => {
-      oThis.fs.commit([], async function () {
+      this.fs.commit([], async () => {
         // Get the properties we need to fill in the templates
-        const result = await oThis._packageConfigFunc();
+        const result = await this._packageConfigFunc();
 
-        oThis.props = result.props;
+        this.props = result.props;
 
-        await updatePackageJsonForTypeScript(oThis, 
+        await updatePackageJsonForTypeScript(this, 
                 result.packageJsonData,
                 destPackageJson);
         resolve();
@@ -218,11 +217,10 @@ module.exports = class extends Generator {
   }
 
   install() {
-    const oThis = this;
-    this.npmInstall([], {}, function(err: any) {
+    this.npmInstall([], {}, (err: any) => {
       if (!err) {
-        oThis.log(chalk.green("Everything looks good!"));
-        oThis.log(`You can now run ${chalk.yellow('npm test')} to verify that the module tests pass`);
+        this.log(chalk.green("Everything looks good!"));
+        this.log(`You can now run ${chalk.yellow('npm test')} to verify that the module tests pass`);
       }
     });
   }

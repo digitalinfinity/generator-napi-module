@@ -1,9 +1,7 @@
 const addon = require('../build/Release/<%= moduleFileName %>');
 
 function <%= moduleClassName %>(name) {
-    var oThis = this;
-
-    oThis.greet = function(str) {
+    this.greet = function(str) {
         return _addonInstance.greet(str);
     }
 
