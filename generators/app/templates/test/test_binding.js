@@ -1,4 +1,4 @@
-const <%= moduleClassName %> = require("../lib/binding.js");
+const <%= moduleClassName %> = require("<%= bindingJsFile %>");
 const assert = require("assert");
 
 assert(<%= moduleClassName %>, "The expected module is undefined");

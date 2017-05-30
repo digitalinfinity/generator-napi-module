@@ -9,13 +9,14 @@ const yosay = require('yosay');
 
 interface IGeneratorProps
 {
+  bindingJsFile: string,
   moduleFileName: string,
   moduleSourceFileName: string,
   moduleHeaderFileName: string,
   moduleClassName: string
 };
 
-function getCppFileName(strName: string) {
+function getValidModuleName(strName: string) {
   // If the name of the module provided happens 
   // to be napi, normalize it so that the header
   // doesn't clash with node-addon-api's napi.h
@@ -24,7 +25,11 @@ function getCppFileName(strName: string) {
     strName = "napi-module";
   }
 
-  return strName.replace(new RegExp('-', 'g'), '_') 
+  return strName;
+}
+
+function getCppFileName(strName: string) {
+  return getValidModuleName(strName).replace(new RegExp('-', 'g'), '_') 
 }
 
 function createPackageJson() {
@@ -51,12 +56,14 @@ function createPackageJson() {
       }
 
       const moduleName = data.name;
+
       const props: IGeneratorProps =
         {
+          bindingJsFile: '../lib/binding.js',
           moduleFileName: `${moduleName}-native`,
           moduleSourceFileName: getCppFileName(moduleName) + '.cc',
           moduleHeaderFileName: getCppFileName(moduleName) + '.h',
-          moduleClassName: uppercamelcase(moduleName)
+          moduleClassName: uppercamelcase(getValidModuleName(moduleName))
         };
 
       resolve(props);
@@ -71,6 +78,15 @@ module.exports = class extends Generator {
   constructor(args: any, opts: any) {
     super(args, opts);
 
+    this.option('typescript', 
+      {
+        'description': 'Generate the wrapper binding in TypeScript instead of JavaScript',
+        'alias': 't',
+        'type': Boolean,
+        'default': false,
+        'hide': false
+      });
+
     this._packageConfigFunc = opts.packageConfigFunc || createPackageJson;
   }
 
@@ -80,10 +96,18 @@ module.exports = class extends Generator {
       'Welcome to the bedazzling ' + chalk.red('N-API module') + ' generator!'
     ));
 
+    const genTypeScript = (this.options as any).typescript;
+    let sourcePackageJson = 'package.json';
+
+    if (genTypeScript)
+    {
+      sourcePackageJson = 'package.ts.json';
+    }
+
     // First, deploy package.json
     // We'll use this to start configuring the package's properties
     this.fs.copy(
-      this.templatePath('package.json'),
+      this.templatePath(sourcePackageJson),
       this.destinationPath('package.json')
     );
 
@@ -98,13 +122,26 @@ module.exports = class extends Generator {
   }
 
   writing() {
+    let bindingWrapper = 'lib/binding.js';
+    const genTypeScript = (this.options as any).typescript;
+    if (genTypeScript)
+    {
+      bindingWrapper = 'lib/binding.ts';
+      this.props.bindingJsFile = '../dist/binding.js';
+    }
+
     const files = [
         ['binding.gyp'],
-        ['lib/binding.js'],
+        [bindingWrapper],
         ['src/module.cc', `src/${this.props.moduleSourceFileName}`],
         ['src/include/module.h', `src/include/${this.props.moduleHeaderFileName}`],
         ['test/test_binding.js']
     ];
+
+    if (genTypeScript)
+    {
+      files.push(['tsconfig.json']);
+    }
 
     for (const fileSpec of files) {
       const src = this.templatePath(fileSpec[0]);

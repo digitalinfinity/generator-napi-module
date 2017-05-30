@@ -42,7 +42,6 @@ Napi::Value <%= moduleClassName %>::Greet(const Napi::CallbackInfo& info) {
 
     if (ValueIsNullOrUndefined(info[0]))
     {
-        printf("Invalid args\n");
         throw Error::New(info.Env(), "My name needs to be defined");
     }
 
