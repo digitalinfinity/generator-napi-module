@@ -55,7 +55,7 @@ describe('generator-napi-module:app', () => {
       'binding.gyp',
       'lib/binding.js',
       'src/test_napi_module.cc',
-      'src/include/test_napi_module.h',
+      'src/test_napi_module.h',
       'test/test_binding.js'
     ]);
   });
@@ -72,7 +72,7 @@ describe('generator-napi-module:app:ts', () => {
       'binding.gyp',
       'lib/binding.ts',
       'src/test_napi_module.cc',
-      'src/include/test_napi_module.h',
+      'src/test_napi_module.h',
       'test/test_binding.js'
     ]);
   });

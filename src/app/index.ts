@@ -196,7 +196,7 @@ module.exports = class extends Generator {
         ['binding.gyp'],
         [bindingWrapper],
         ['src/module.cc', `src/${this.props.moduleSourceFileName}`],
-        ['src/include/module.h', `src/include/${this.props.moduleHeaderFileName}`],
+        ['src/module.h', `src/${this.props.moduleHeaderFileName}`],
         ['test/test_binding.js']
     ];
 
