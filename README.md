@@ -4,7 +4,7 @@
 Use this module to quickly generate a skeleton module using [N-API](https://nodejs.org/dist/latest-v8.x/docs/api/n-api.html),
 the new API for Native addons introduced in Node 8. This module automatically
 sets up your gyp files to use [node-addon-api](https://www.npmjs.com/package/node-addon-api), 
-the C++ wrappers for N-API] and generates a wrapper JS module. Optionally, it 
+the C++ wrappers for N-API and generates a wrapper JS module. Optionally, it 
 can even configure the generated project to use TypeScript instead!
 
 ## Installation
