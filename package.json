@@ -1,6 +1,6 @@
 {
   "name": "generator-napi-module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A yeoman generator to create a next-generation Node native module using N-API",
   "homepage": "",
   "author": {
