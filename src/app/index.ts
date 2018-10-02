@@ -1,35 +1,32 @@
-import * as Generator from 'yeoman-generator';
-import * as path from 'path';
-import * as fs from 'fs';
+import * as fs from "fs";
+import * as path from "path";
+import * as Generator from "yeoman-generator";
 
 // Stuff without types
-const chalk = require('chalk');
-const initPackageJson = require('init-package-json');
-const uppercamelcase = require('uppercamelcase');
-const writeFileAtomic = require('write-file-atomic');
-const yosay = require('yosay');
+import chalk from "chalk";
+import initPackageJson = require("init-package-json");
+import * as uppercamelcase from "uppercamelcase";
+import * as writeFileAtomic from "write-file-atomic";
+import yosay = require("yosay");
 
-interface IGeneratorProps
-{
-  bindingJsFile: string,
-  moduleFileName: string,
-  moduleSourceFileName: string,
-  moduleHeaderFileName: string,
-  moduleClassName: string
-};
+interface IGeneratorProps {
+  bindingJsFile: string;
+  moduleFileName: string;
+  moduleSourceFileName: string;
+  moduleHeaderFileName: string;
+  moduleClassName: string;
+}
 
-interface ICreatePackageJsonResult
-{
-  packageJsonData: any,
-  props: IGeneratorProps
-};
+interface ICreatePackageJsonResult {
+  packageJsonData: any;
+  props: IGeneratorProps;
+}
 
 function getValidModuleName(strName: string) {
-  // If the name of the module provided happens 
+  // If the name of the module provided happens
   // to be napi, normalize it so that the header
   // doesn't clash with node-addon-api's napi.h
-  if (strName.toLowerCase() === "napi")
-  {
+  if (strName.toLowerCase() === "napi") {
     strName = "napi-module";
   }
 
@@ -37,7 +34,7 @@ function getValidModuleName(strName: string) {
 }
 
 function getCppFileName(strName: string) {
-  return getValidModuleName(strName).replace(new RegExp('-', 'g'), '_') 
+  return getValidModuleName(strName).replace(new RegExp("-", "g"), "_");
 }
 
 function createPackageJson() {
@@ -50,78 +47,73 @@ function createPackageJson() {
     npmDirRoot = process.env.USERPROFILE;
     if (!npmDirRoot) {
             // If all else fails, try using the current directory
-      npmDirRoot = '.';
+      npmDirRoot = ".";
     }
   }
 
-  const initFile = path.resolve(npmDirRoot, '.npm-init');
+  const initFile = path.resolve(npmDirRoot, ".npm-init");
   const dir = process.cwd();
 
-  return new Promise<ICreatePackageJsonResult>(function (resolve, reject) {
-    initPackageJson(dir, initFile, {}, function (error: any, data: any) {
+  return new Promise<ICreatePackageJsonResult>((resolve, reject) => {
+    initPackageJson(dir, initFile, (error: any, data: any) => {
       if (error) {
         reject(error);
       }
 
       const moduleName = data.name;
 
-      const props: IGeneratorProps =
-        {
-          bindingJsFile: '../lib/binding.js',
+      const props: IGeneratorProps = {
+          bindingJsFile: "../lib/binding.js",
+          moduleClassName: uppercamelcase(getValidModuleName(moduleName)),
           moduleFileName: `${moduleName}-native`,
-          moduleSourceFileName: getCppFileName(moduleName) + '.cc',
-          moduleHeaderFileName: getCppFileName(moduleName) + '.h',
-          moduleClassName: uppercamelcase(getValidModuleName(moduleName))
+          moduleHeaderFileName: getCppFileName(moduleName) + ".h",
+          moduleSourceFileName: getCppFileName(moduleName) + ".cc",
         };
 
       resolve({
         packageJsonData: data,
-        props: props
+        props,
       });
     });
   });
 }
 
-async function updatePackageJsonForTypeScript(generator: any, 
-  currentPackageJsonData: any,
-  packageJsonPath: string) {
-  if (generator.options.typescript == false)
-  {
+async function updatePackageJsonForTypeScript(generator: any,
+                                              currentPackageJsonData: any,
+                                              packageJsonPath: string) {
+  if (generator.options.typescript === false) {
       await generator.prompt([{
-        type: 'confirm',
-        name: 'typescript',
-        message: 'Would you like to generate TypeScript wrappers for your module?',
-        default: false
+        default: false,
+        message: "Would you like to generate TypeScript wrappers for your module?",
+        name: "typescript",
+        type: "confirm",
       }]).then((answers: any) => {
             (generator.options as any).typescript = answers.typescript;
       });
   }
 
-  return new Promise(function(resolve, reject) {
-    if (!generator.options.typescript)
-    {
+  return new Promise((resolve, reject) => {
+    if (!generator.options.typescript) {
       resolve();
       return;
     }
 
     // We do want TypeScript support- update package.json
-    let tsPackageJson = undefined;
+    let tsPackageJson;
     try {
-      tsPackageJson = JSON.parse(fs.readFileSync(generator.templatePath("package.ts.json"), 'utf8'));
-    }
-    catch (e) {
+      tsPackageJson = JSON.parse(fs.readFileSync(generator.templatePath("package.ts.json"), "utf8"));
+    } catch (e) {
       reject(e);
     }
 
-    if (!tsPackageJson)
-    {
+    if (!tsPackageJson) {
       reject("Invalid TypeScript package");
     }
 
     Object.assign(currentPackageJsonData, tsPackageJson);
-    writeFileAtomic(packageJsonPath, 
-      JSON.stringify(currentPackageJsonData, null, 4), 
-      function(err: any) {
+    writeFileAtomic(packageJsonPath,
+      JSON.stringify(currentPackageJsonData, null, 4),
+      (err: any) => {
         if (err) {
           reject(err);
           return;
@@ -135,46 +127,46 @@ async function updatePackageJsonForTypeScript(generator: any,
 }
 
 module.exports = class extends Generator {
-  _packageConfigFunc: () => Promise<ICreatePackageJsonResult>;
-  props: IGeneratorProps;
+  private packageConfigFunc: () => Promise<ICreatePackageJsonResult>;
+  private props?: IGeneratorProps;
 
   constructor(args: any, opts: any) {
     super(args, opts);
 
-    this.option('typescript', 
+    this.option("typescript",
       {
-        'description': 'Generate the wrapper binding in TypeScript instead of JavaScript',
-        'alias': 't',
-        'type': Boolean,
-        'default': false,
-        'hide': false
+        alias: "t",
+        default: false,
+        description: "Generate the wrapper binding in TypeScript instead of JavaScript",
+        hide: false,
+        type: Boolean,
       });
 
-    this._packageConfigFunc = opts.packageConfigFunc || createPackageJson;
+    this.packageConfigFunc = opts.packageConfigFunc || createPackageJson;
   }
 
-  prompting() {
+  public prompting() {
     // Yeoman is polite- greet the user
     this.log(yosay(
-      'Welcome to the bedazzling ' + chalk.red('N-API module') + ' generator!'
+      "Welcome to the bedazzling " + chalk.red("N-API module") + " generator!",
     ));
 
-    const destPackageJson = this.destinationPath('package.json');
+    const destPackageJson = this.destinationPath("package.json");
     // First, deploy package.json
     // We'll use this to start configuring the package's properties
     this.fs.copy(
       this.templatePath("package.json"),
-      destPackageJson
+      destPackageJson,
     );
 
     return new Promise((resolve, reject) => {
       this.fs.commit([], async () => {
         // Get the properties we need to fill in the templates
-        const result = await this._packageConfigFunc();
+        const result = await this.packageConfigFunc();
 
         this.props = result.props;
 
-        await updatePackageJsonForTypeScript(this, 
+        await updatePackageJsonForTypeScript(this,
                 result.packageJsonData,
                 destPackageJson);
         resolve();
@@ -182,26 +174,28 @@ module.exports = class extends Generator {
     });
   }
 
-  writing() {
-    let bindingWrapper = 'lib/binding.js';
+  public writing() {
+    if (!this.props) {
+      throw new Error("Missing project properties");
+    }
+
+    let bindingWrapper = "lib/binding.js";
     const genTypeScript = (this.options as any).typescript;
-    if (genTypeScript)
-    {
-      bindingWrapper = 'lib/binding.ts';
-      this.props.bindingJsFile = '../dist/binding.js';
+    if (genTypeScript) {
+      bindingWrapper = "lib/binding.ts";
+      this.props.bindingJsFile = "../dist/binding.js";
     }
 
     const files = [
-        ['binding.gyp'],
+        ["binding.gyp"],
         [bindingWrapper],
-        ['src/module.cc', `src/${this.props.moduleSourceFileName}`],
-        ['src/module.h', `src/${this.props.moduleHeaderFileName}`],
-        ['test/test_binding.js']
+        ["src/module.cc", `src/${this.props.moduleSourceFileName}`],
+        ["src/module.h", `src/${this.props.moduleHeaderFileName}`],
+        ["test/test_binding.js"],
     ];
 
-    if (genTypeScript)
-    {
-      files.push(['tsconfig.json']);
+    if (genTypeScript) {
+      files.push(["tsconfig.json"]);
     }
 
     for (const fileSpec of files) {
@@ -211,16 +205,16 @@ module.exports = class extends Generator {
       this.fs.copyTpl(
         src,
         dest,
-        this.props
+        this.props,
       );
     }
   }
 
-  install() {
+  public install() {
     this.npmInstall([], {}, (err: any) => {
       if (!err) {
         this.log(chalk.green("Everything looks good!"));
-        this.log(`You can now run ${chalk.yellow('npm test')} to verify that the module tests pass`);
+        this.log(`You can now run ${chalk.yellow("npm test")} to verify that the module tests pass`);
       }
     });
   }
