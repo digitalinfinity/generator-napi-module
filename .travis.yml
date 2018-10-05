@@ -1,0 +1,32 @@
+dist: trusty
+language: node_js
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - libstdc++-4.9-dev
+env:
+  global:
+  - NVS_VERSION=1.4.2
+  matrix:
+  - NODEJS_VERSION=node/6
+  - NODEJS_VERSION=node/8
+  - NODEJS_VERSION=node/10
+  - NODEJS_VERSION=chakracore/10
+before_install:
+# Install NVS.
+- git clone --branch v$NVS_VERSION --depth 1 https://github.com/jasongin/nvs ~/.nvs
+- . ~/.nvs/nvs.sh
+- nvs --version
+install:
+# Install the selected version of Node.js using NVS.
+- nvs add $NODEJS_VERSION
+- nvs use $NODEJS_VERSION
+- node --version
+- npm --version
+# Install the application's NPM dependencies.
+- npm install
+script:
+- npm run build
+- npm test
