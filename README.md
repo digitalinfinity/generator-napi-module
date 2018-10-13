@@ -16,10 +16,23 @@ npm install -g yo
 npm install -g generator-napi-module
 ```
 
+Create a directory for your N-API module:
+```bash
+mkdir <moduleName>
+cd <moduleName>
+```
+
 Then generate your new project:
 
 ```bash
 yo napi-module
+```
+
+This will generate a really simple N-API module- think of this as the Hello world
+of N-API modules. If you want a slightly more complicated module that is similar
+to what you'd write in a real world N-API module, run the following command:
+```bash
+yo napi-module --intermediate
 ```
 
 ## Getting To Know Yeoman

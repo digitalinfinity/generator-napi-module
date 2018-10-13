@@ -55,7 +55,6 @@ describe('generator-napi-module:app', () => {
       'binding.gyp',
       'lib/binding.js',
       'src/test_napi_module.cc',
-      'src/test_napi_module.h',
       'test/test_binding.js'
     ]);
   });
@@ -72,9 +71,41 @@ describe('generator-napi-module:app:ts', () => {
       'binding.gyp',
       'lib/binding.ts',
       'src/test_napi_module.cc',
+      'test/test_binding.js'
+    ]);
+  });
+});
+
+describe('generator-napi-module:app:inter', () => {
+  beforeAll(() => {
+    return helpers.run(path.join(__dirname, '../generators/app'))
+      .withOptions({packageConfigFunc: defaultPackageConfigFunc, intermediate: true,});
+  });
+
+  it('creates files', () => {
+    assert.file([
+      'binding.gyp',
+      'lib/binding.js',
+      'src/test_napi_module.cc',
       'src/test_napi_module.h',
       'test/test_binding.js'
     ]);
   });
 });
 
+describe('generator-napi-module:app:interts', () => {
+  beforeAll(() => {
+    return helpers.run(path.join(__dirname, '../generators/app'))
+      .withOptions({packageConfigFunc: defaultTypeScriptPackageConfigFunc, intermediate: true, typescript: true});
+  });
+
+  it('creates files', () => {
+    assert.file([
+      'binding.gyp',
+      'lib/binding.ts',
+      'src/test_napi_module.cc',
+      'src/test_napi_module.h',
+      'test/test_binding.js'
+    ]);
+  });
+});
