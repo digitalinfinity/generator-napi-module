@@ -78,6 +78,29 @@ function createPackageJson() {
   });
 }
 
+async function promptForTemplate(generator: any) {
+  const options = generator.options as any;
+
+  if (options.intermediate === true) {
+    return;
+  }
+
+  const answer = await generator.prompt({
+    choices: [{
+        name: "Hello World",
+        value: "basic",
+      }, {
+        name: "Object Wrap",
+        value: "intermediate",
+      }],
+    message: "Choose a template",
+    name: "template",
+    type: "list",
+  });
+
+  options.intermediate = answer.template === "intermediate";
+}
+
 async function updatePackageJsonForTypeScript(generator: any,
                                               currentPackageJsonData: any,
                                               packageJsonPath: string) {
@@ -133,6 +156,15 @@ module.exports = class extends Generator {
   constructor(args: any, opts: any) {
     super(args, opts);
 
+    this.option("intermediate",
+      {
+        alias: "i",
+        default: false,
+        description: "Generate a wrapper with an intermediate code example",
+        hide: false,
+        type: Boolean,
+      });
+
     this.option("typescript",
       {
         alias: "t",
@@ -166,9 +198,11 @@ module.exports = class extends Generator {
 
         this.props = result.props;
 
+        await promptForTemplate(this);
         await updatePackageJsonForTypeScript(this,
                 result.packageJsonData,
                 destPackageJson);
+
         resolve();
       });
     });
@@ -179,20 +213,37 @@ module.exports = class extends Generator {
       throw new Error("Missing project properties");
     }
 
-    let bindingWrapper = "lib/binding.js";
+    let bindingWrapperTarget = "lib/binding.js";
     const genTypeScript = (this.options as any).typescript;
+    const genIntermediate = (this.options as any).intermediate;
+
+    let bindingWrapperSrc = (genIntermediate ?
+                                "lib/binding_intermediate.js" :
+                                bindingWrapperTarget);
     if (genTypeScript) {
-      bindingWrapper = "lib/binding.ts";
+      if (genIntermediate) {
+        bindingWrapperSrc = "lib/binding_intermediate.ts";
+      } else {
+        bindingWrapperSrc = "lib/binding.ts";
+      }
+
+      bindingWrapperTarget = "lib/binding.ts";
       this.props.bindingJsFile = "../dist/binding.js";
     }
 
     const files = [
         ["binding.gyp"],
-        [bindingWrapper],
-        ["src/module.cc", `src/${this.props.moduleSourceFileName}`],
-        ["src/module.h", `src/${this.props.moduleHeaderFileName}`],
-        ["test/test_binding.js"],
+        [bindingWrapperSrc, bindingWrapperTarget],
     ];
+
+    if (genIntermediate) {
+      files.push(["src/module_intermediate.cc", `src/${this.props.moduleSourceFileName}`]);
+      files.push(["src/module_intermediate.h", `src/${this.props.moduleHeaderFileName}`]);
+      files.push(["test/test_binding_intermediate.js", "test/test_binding.js"]);
+    } else {
+      files.push(["src/module.cc", `src/${this.props.moduleSourceFileName}`]);
+      files.push(["test/test_binding.js"]);
+    }
 
     if (genTypeScript) {
       files.push(["tsconfig.json"]);
