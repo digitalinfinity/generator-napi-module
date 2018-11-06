@@ -78,6 +78,29 @@ function createPackageJson() {
   });
 }
 
+async function promptForTemplate(generator: any) {
+  const options = generator.options as any;
+
+  if (options.intermediate === true) {
+    return;
+  }
+
+  const answer = await generator.prompt({
+    choices: [{
+        name: "Hello World",
+        value: "basic",
+      }, {
+        name: "Object Wrap",
+        value: "intermediate",
+      }],
+    message: "Choose a template",
+    name: "template",
+    type: "list",
+  });
+
+  options.intermediate = answer.template === "intermediate";
+}
+
 async function updatePackageJsonForTypeScript(generator: any,
                                               currentPackageJsonData: any,
                                               packageJsonPath: string) {
@@ -175,9 +198,11 @@ module.exports = class extends Generator {
 
         this.props = result.props;
 
+        await promptForTemplate(this);
         await updatePackageJsonForTypeScript(this,
                 result.packageJsonData,
                 destPackageJson);
+
         resolve();
       });
     });
