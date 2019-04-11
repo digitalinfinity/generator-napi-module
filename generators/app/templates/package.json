@@ -1,10 +1,16 @@
 {
-    "main": "lib/binding.js",
+    "main": "dist/binding.js",
     "dependencies": {
         "node-addon-api": "^1.1.0"
     },
     "scripts": {
-        "test": "node --napi-modules ./test/test_binding.js"
+        "test": "node --napi-modules ./test/test_binding.js",
+        "build": "node-gyp rebuild"
     },
-    "gypfile": true
+    "gypfile": true,
+    "files": [
+        "binding.gyp",
+        "src",
+        "dist"
+    ]
 }
