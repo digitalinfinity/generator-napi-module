@@ -233,6 +233,7 @@ module.exports = class extends Generator {
 
     const files = [
         ["binding.gyp"],
+        [".gitignore"],
         [bindingWrapperSrc, bindingWrapperTarget],
     ];
 
