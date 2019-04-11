@@ -5,6 +5,7 @@
     },
     "scripts": {
         "pretest": "tsc",
-        "test": "node --napi-modules ./test/test_binding.js"
+        "test": "node --napi-modules ./test/test_binding.js",
+        "build": "node-gyp rebuild && tsc"
     }
 }
