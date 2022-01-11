@@ -15,7 +15,7 @@ function testInvalidParams()
     const instance = new <%= moduleClassName %>();
 }
 
-assert.doesNotThrow(testBasic, undefined, "testBasic threw an expection");
+assert.doesNotThrow(testBasic, undefined, "testBasic threw an exception");
 assert.throws(testInvalidParams, undefined, "testInvalidParams didn't throw");
 
 console.log("Tests passed- everything looks OK!");

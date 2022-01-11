@@ -9,6 +9,6 @@ function testBasic()
     assert.strictEqual(result, "world", "Unexpected value returned");
 }
 
-assert.doesNotThrow(testBasic, undefined, "testBasic threw an expection");
+assert.doesNotThrow(testBasic, undefined, "testBasic threw an exception");
 
 console.log("Tests passed- everything looks OK!");
