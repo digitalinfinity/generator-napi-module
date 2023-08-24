@@ -243,7 +243,7 @@ module.exports = class extends Generator {
   public prompting() {
     // Yeoman is polite- greet the user
     this.log(yosay(
-      "Welcome to the bedazzling " + chalk.red("N-API module") + " generator!" + chalk.green("a123"),
+      "Welcome to the bedazzling " + chalk.red("N-API module") + " generator!",
     ));
 
     const destPackageJson = this.destinationPath("package.json");
