@@ -1,10 +1,13 @@
 {
+  "exclude": [
+    "build"
+  ],
   "compilerOptions": {
     "declaration": true,
+    "baseUrl": ".",
     "lib": [ "esnext" ],
     "module": "commonjs",
-    "outDir": "./dist",
-    "rootDir": "./lib",
+    "rootDir": ".",
     "strict": true,
     "target": "es6",
     "types": [
@@ -12,6 +15,7 @@
     ],
     "typeRoots": [
       "node_modules/@types"
-    ]
+    ],
+    "esModuleInterop": true
   }
 }

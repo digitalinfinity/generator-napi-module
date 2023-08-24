@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as lodash from "lodash";
 import * as path from "path";
 import * as Generator from "yeoman-generator";
 
@@ -38,15 +39,15 @@ function getCppFileName(strName: string) {
 }
 
 function createPackageJson() {
-    // Figure out the directory to put in .npm-init
-    // The assumption is that all of the directories
-    // that we try below will be writable
+  // Figure out the directory to put in .npm-init
+  // The assumption is that all of the directories
+  // that we try below will be writable
   let npmDirRoot = process.env.HOME;
   if (!npmDirRoot) {
-        // Try USERPROFILE, this gets defined on Windows
+    // Try USERPROFILE, this gets defined on Windows
     npmDirRoot = process.env.USERPROFILE;
     if (!npmDirRoot) {
-            // If all else fails, try using the current directory
+      // If all else fails, try using the current directory
       npmDirRoot = ".";
     }
   }
@@ -63,12 +64,12 @@ function createPackageJson() {
       const moduleName = data.name;
 
       const props: IGeneratorProps = {
-          bindingJsFile: "../lib/binding.js",
-          moduleClassName: uppercamelcase(getValidModuleName(moduleName)),
-          moduleFileName: `${moduleName}-native`,
-          moduleHeaderFileName: getCppFileName(moduleName) + ".h",
-          moduleSourceFileName: getCppFileName(moduleName) + ".cc",
-        };
+        bindingJsFile: "../lib/binding.js",
+        moduleClassName: uppercamelcase(getValidModuleName(moduleName)),
+        moduleFileName: `${moduleName}-native`,
+        moduleHeaderFileName: getCppFileName(moduleName) + ".h",
+        moduleSourceFileName: getCppFileName(moduleName) + ".cc",
+      };
 
       resolve({
         packageJsonData: data,
@@ -87,12 +88,12 @@ async function promptForTemplate(generator: any) {
 
   const answer = await generator.prompt({
     choices: [{
-        name: "Hello World",
-        value: "basic",
-      }, {
-        name: "Object Wrap",
-        value: "intermediate",
-      }],
+      name: "Hello World",
+      value: "basic",
+    }, {
+      name: "Object Wrap",
+      value: "intermediate",
+    }],
     message: "Choose a template",
     name: "template",
     type: "list",
@@ -105,17 +106,17 @@ async function updatePackageJsonForTypeScript(generator: any,
                                               currentPackageJsonData: any,
                                               packageJsonPath: string) {
   if (generator.options.typescript === false) {
-      await generator.prompt([{
-        default: false,
-        message: "Would you like to generate TypeScript wrappers for your module?",
-        name: "typescript",
-        type: "confirm",
-      }]).then((answers: any) => {
-            (generator.options as any).typescript = answers.typescript;
-      });
+    await generator.prompt([{
+      default: false,
+      message: "Would you like to generate TypeScript wrappers for your module?",
+      name: "typescript",
+      type: "confirm",
+    }]).then((answers: any) => {
+      (generator.options as any).typescript = answers.typescript;
+    });
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     if (!generator.options.typescript) {
       resolve();
       return;
@@ -133,7 +134,8 @@ async function updatePackageJsonForTypeScript(generator: any,
       reject("Invalid TypeScript package");
     }
 
-    Object.assign(currentPackageJsonData, tsPackageJson);
+    // @ts-ignore
+    currentPackageJsonData = lodash.merge(currentPackageJsonData, tsPackageJson);
     writeFileAtomic(packageJsonPath,
       JSON.stringify(currentPackageJsonData, null, 4),
       (err: any) => {
@@ -143,6 +145,58 @@ async function updatePackageJsonForTypeScript(generator: any,
         }
 
         generator.log("Updated package.json to support TypeScript");
+        resolve();
+        return;
+      });
+  });
+}
+
+async function updatePackageJsonWithBuildType(generator: any,
+                                              currentPackageJsonData: any,
+                                              packageJsonPath: string) {
+  if (generator.options.cmake === false) {
+    await generator.prompt([{
+      choices: ["gyp", "cmake-js"],
+      default: false,
+      message: "Which build system do you want to use ?",
+      name: "build_type",
+      type: "list",
+    }]).then((answers: any) => {
+      (generator.options as any).cmake = answers.build_type === "cmake-js";
+    });
+  }
+
+  return new Promise<void>((resolve, reject) => {
+
+    // We do want CMake support- update package.json
+    let buildPackageJsonFileName;
+    if (generator.options.cmake) {
+      buildPackageJsonFileName = "package.cmake.json";
+    } else {
+      buildPackageJsonFileName = "package.gyp.json";
+    }
+    let buildPackageJson;
+    try {
+      buildPackageJson = JSON.parse(fs.readFileSync(generator.templatePath(buildPackageJsonFileName), "utf8"));
+    } catch (e) {
+      reject(e);
+    }
+
+    if (!buildPackageJson) {
+      reject("Invalid TypeScript package");
+    }
+
+    // @ts-ignore
+    currentPackageJsonData = lodash.merge(currentPackageJsonData, buildPackageJson);
+    writeFileAtomic(packageJsonPath,
+      JSON.stringify(currentPackageJsonData, null, 4),
+      (err: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        generator.log("Updated package.json to build ", generator.options.cmake ? "CMake.js" : "gyp");
         resolve();
         return;
       });
@@ -174,13 +228,22 @@ module.exports = class extends Generator {
         type: Boolean,
       });
 
+    this.option("cmake",
+      {
+        alias: "c",
+        default: false,
+        description: "Generate a wrapper with CMakeJS build instead of gyp",
+        hide: false,
+        type: Boolean,
+      });
+
     this.packageConfigFunc = opts.packageConfigFunc || createPackageJson;
   }
 
   public prompting() {
     // Yeoman is polite- greet the user
     this.log(yosay(
-      "Welcome to the bedazzling " + chalk.red("N-API module") + " generator!",
+      "Welcome to the bedazzling " + chalk.red("N-API module") + " generator!" + chalk.green("a123"),
     ));
 
     const destPackageJson = this.destinationPath("package.json");
@@ -191,7 +254,7 @@ module.exports = class extends Generator {
       destPackageJson,
     );
 
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       this.fs.commit([], async () => {
         // Get the properties we need to fill in the templates
         const result = await this.packageConfigFunc();
@@ -200,8 +263,11 @@ module.exports = class extends Generator {
 
         await promptForTemplate(this);
         await updatePackageJsonForTypeScript(this,
-                result.packageJsonData,
-                destPackageJson);
+          result.packageJsonData,
+          destPackageJson);
+        await updatePackageJsonWithBuildType(this,
+          result.packageJsonData,
+          destPackageJson);
 
         resolve();
       });
@@ -213,41 +279,54 @@ module.exports = class extends Generator {
       throw new Error("Missing project properties");
     }
 
-    let bindingWrapperTarget = "lib/binding.js";
     const genTypeScript = (this.options as any).typescript;
     const genIntermediate = (this.options as any).intermediate;
+    const useCmake = (this.options as any).cmake;
 
-    let bindingWrapperSrc = (genIntermediate ?
-                                "lib/binding_intermediate.js" :
-                                bindingWrapperTarget);
-    if (genTypeScript) {
-      if (genIntermediate) {
-        bindingWrapperSrc = "lib/binding_intermediate.ts";
-      } else {
-        bindingWrapperSrc = "lib/binding.ts";
-      }
+    const files: string[][] = [];
 
-      bindingWrapperTarget = "lib/binding.ts";
-      this.props.bindingJsFile = "../dist/binding.js";
+    files.push([".npmignore"]);
+
+    // index entry-point
+    // const bindingWrapperTarget = "index.js";
+    // const bindingWrapperSrc = (genIntermediate ?
+    //   "index_intermediate.js" :
+    //   bindingWrapperTarget);
+    // files.push([bindingWrapperSrc, bindingWrapperTarget]);
+    files.push(["index.js"]);
+
+    // build system
+    if (useCmake) {
+      files.push(["CMakeLists.txt"]);
+    } else {
+      files.push(["binding.gyp"]);
     }
 
-    const files = [
-        ["binding.gyp"],
-        [bindingWrapperSrc, bindingWrapperTarget],
-    ];
-
+    // Source files (C++ and JS) and tests
     if (genIntermediate) {
       files.push(["src/module_intermediate.cc", `src/${this.props.moduleSourceFileName}`]);
       files.push(["src/module_intermediate.h", `src/${this.props.moduleHeaderFileName}`]);
-      files.push(["test/test_binding_intermediate.js", "test/test_binding.js"]);
     } else {
       files.push(["src/module.cc", `src/${this.props.moduleSourceFileName}`]);
-      files.push(["test/test_binding.js"]);
     }
 
+    // Typescript definitions & configs
     if (genTypeScript) {
+      files.push(["types/index.d.ts"]);
+      const declarationFileSrc = genIntermediate ? "types/module_intermediate.d.ts" : "types/module.d.ts";
+      files.push([declarationFileSrc, `types/${this.props.moduleFileName}.d.ts`]);
       files.push(["tsconfig.json"]);
     }
+
+    // Test files
+    const ext = genTypeScript ? "ts" : "js";
+    const testFileTarget = `test/test_binding.${ext}`;
+    const testFileSource = genIntermediate ? `test/test_binding_intermediate.${ext}` : testFileTarget;
+
+    files.push([testFileSource, testFileTarget]);
+
+    // Scripts
+    files.push(["scripts/preinstall.sh"]);
 
     for (const fileSpec of files) {
       const src = this.templatePath(fileSpec[0]);
