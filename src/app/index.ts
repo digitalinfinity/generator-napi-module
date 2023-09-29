@@ -285,7 +285,7 @@ module.exports = class extends Generator {
 
     const files: string[][] = [];
 
-    files.push([".npmignore"]);
+    files.push(["npmignore", ".npmignore"]);
 
     // index entry-point
     // const bindingWrapperTarget = "index.js";
