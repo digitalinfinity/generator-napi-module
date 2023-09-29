@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "cmake-js": "^7.2.1"
+  },
+  "scripts": {
+    "build": "cmake-js compile -G 'Unix Makefiles'",
+    "clean": "cmake-js clean && rm -f lib/*.node"
+  }
+}

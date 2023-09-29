@@ -1,11 +1,11 @@
-const <%= moduleClassName %> = require("<%= bindingJsFile %>");
+const addon = require("../");
 const assert = require("assert");
 
-assert(<%= moduleClassName %>, "The expected function is undefined");
+assert(addon.<%= moduleClassName %>, "The expected function is undefined");
 
 function testBasic()
 {
-    const result =  <%= moduleClassName %>("hello");
+    const result =  addon.<%= moduleClassName %>("hello");
     assert.strictEqual(result, "world", "Unexpected value returned");
 }
 

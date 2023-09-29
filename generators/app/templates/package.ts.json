@@ -1,10 +1,13 @@
 {
-    "devDependencies": {
-        "@types/node": "^7.0.22",
-        "typescript": "^2.3.3"
-    },
-    "scripts": {
-        "pretest": "tsc",
-        "test": "node --napi-modules ./test/test_binding.js"
-    }
+  "devDependencies": {
+    "@types/node": "^20.5.4",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "ts-node": "^10.9.1"
+  },
+  "types": "types/index",
+  "scripts": {
+    "test": "ts-node test/test_binding.ts"
+  }
 }

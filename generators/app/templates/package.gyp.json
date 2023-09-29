@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "node-gyp": "^9.4.0"
+  },
+  "gypfile": true,
+  "scripts": {
+    "build": "node-gyp configure && node-gyp build",
+    "clean": "rm -rf build"
+  }
+}

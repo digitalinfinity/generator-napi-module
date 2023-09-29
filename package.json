@@ -1,6 +1,6 @@
 {
   "name": "generator-napi-module",
-  "version": "0.3.0",
+  "version": "1.0.4",
   "description": "A yeoman generator to create a next-generation Node native module using N-API",
   "homepage": "https://github.com/digitalinfinity/generator-napi-module",
   "author": {
@@ -29,13 +29,15 @@
     "jest": "^23.6.0",
     "jest-cli": "^23.6.0",
     "tslint": "^5.11.0",
-    "typescript": "^3.1.6",
+    "typescript": "^5.1.6",
     "yeoman-assert": "^3.1.1",
     "yeoman-test": "^1.9.1"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.197",
     "chalk": "^2.4.1",
     "init-package-json": "^1.10.3",
+    "lodash": "^4.17.21",
     "uppercamelcase": "^3.0.0",
     "write-file-atomic": "^2.3.0",
     "yeoman-generator": "^3.1.1",
