@@ -1,6 +1,6 @@
 {
   "name": "generator-napi-module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A yeoman generator to create a next-generation Node native module using N-API",
   "homepage": "https://github.com/digitalinfinity/generator-napi-module",
   "author": {
